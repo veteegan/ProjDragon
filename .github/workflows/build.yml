@@ -1,0 +1,42 @@
+name: Build ProjDragon
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup Theos
+      run: |
+        git clone --recursive https://github.com/theos/theos.git $HOME/theos
+        echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+
+    - name: Install ldid
+      run: brew install ldid
+
+    - name: Download ImGui (If not already included)
+      run: |
+        if [ ! -d "imgui" ]; then
+          git clone https://github.com/ocornut/imgui.git imgui
+          cd imgui
+          git checkout v1.90.9
+        fi
+
+    - name: Build Package
+      run: |
+        make clean package
+
+    - name: Upload Deb
+      uses: actions/upload-artifact@v4
+      with:
+        name: ProjDragon-Deb
+        path: packages/*.deb
