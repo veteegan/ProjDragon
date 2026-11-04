@@ -1,4 +1,4 @@
-name: Build ProjDragon
+name: Build ProjDragon Dylib
 
 on:
   push:
@@ -7,36 +7,33 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-14
 
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v4
       with:
         submodules: recursive
 
-    - name: Setup Theos
+    - name: Set Xcode version
       run: |
-        git clone --recursive https://github.com/theos/theos.git $HOME/theos
-        echo "THEOS=$HOME/theos" >> $GITHUB_ENV
+        sudo xcode-select -s /Applications/Xcode_15.4.app
 
-    - name: Install ldid
-      run: brew install ldid
-
-    - name: Download ImGui (If not already included)
+    - name: Build Dylib via xcodebuild
       run: |
-        if [ ! -d "imgui" ]; then
-          git clone https://github.com/ocornut/imgui.git imgui
-          cd imgui
-          git checkout v1.90.9
-        fi
+        xcodebuild \
+          -project Dragon.xcodeproj \
+          -scheme Sishen \
+          -configuration Release \
+          -sdk iphoneos \
+          -arch arm64 \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          CONFIGURATION_BUILD_DIR=build/Release-iphoneos
 
-    - name: Build Package
-      run: |
-        make clean package
-
-    - name: Upload Deb
+    - name: Upload Dylib Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ProjDragon-Deb
-        path: packages/*.deb
+        name: Sishen-Dylib
+        path: build/Release-iphoneos/Sishen.dylib
