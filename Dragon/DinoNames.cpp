@@ -1,14 +1,5 @@
 #include "DinoNames.h"
 
-namespace
-{
-const bool DinoIndexReady = []
-{
-    DinoNameDetail::BindIndexRevision();
-    return true;
-}();
-}
-
 std::array<std::wstring, 123> DinoClasses =
 {
     L"Achatina_Character_BP_C",
